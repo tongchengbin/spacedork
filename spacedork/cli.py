@@ -17,7 +17,11 @@ def cmd_parser():
     parser.add_argument('--start-page', '-sp', type=int, default=1, help='要处理的数量')
     parser.add_argument('--end-page', '-ep', type=int, default=1, help='要处理的数量')
     parser.add_argument('--thread', '-t', type=int, default=2, help='协程数')
+    parser.add_argument('--fields', '-f', default="url", help='输出字段(url|ip|port|address)')
     args = parser.parse_args()
+    if args.fields not in ("url","ip","port","address"):
+        print("请选择输出字段(url|ip|port)")
+        exit()
     if args.list_module:
         for k, v in reps.repo.items():
             print(k)
@@ -41,7 +45,7 @@ def main():
             return
     plugin = reps.repo.get(args.module)
     plugin_config = yaml_data.get(args.module, {})
-    cls = plugin(**plugin_config,thread=args.thread)
+    cls = plugin(**plugin_config,thread=args.thread,fields=args.fields)
     coroutine = cls.search(args.dork, args.start_page, args.end_page)
     loop = asyncio.get_event_loop()
     loop.run_until_complete(coroutine)

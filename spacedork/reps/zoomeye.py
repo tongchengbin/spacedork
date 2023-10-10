@@ -43,12 +43,17 @@ class ZoomEye(SearchBase):
         self.semaphore = asyncio.Semaphore(thread)
         self.total = -1
 
+
     async def query(self, dork: str, page: int, resource='host'):
         async with self.semaphore:
             if 0 < self.total < (page - 1) * 20:
                 return
             url = f'{self.url}/{resource}/search'
-            resp = await self.client.get(url, timeout=60, params={"query": dork, "page": page})
+            try:
+                resp = await self.client.get(url, timeout=60, params={"query": dork, "page": page})
+            except Exception as e:
+                print(f"Req Error:{e}")
+                return
             if resp and resp.status_code == 200 and 'matches' in resp.text:
                 content = resp.json()
                 total = content['total']
@@ -56,6 +61,8 @@ class ZoomEye(SearchBase):
                 for match in content['matches']:
                     item = format_zoomeye(match)
                     print(item['url'])
+            else:
+                print(f"req Error:{resp}")
 
     async def search(self, dork, start_page=1, end_page=1, resource='host') -> (list, int):
         tasks = []
