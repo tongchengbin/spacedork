@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name='spacedork',
-    version="3.3.0",
+    version="3.3.1",
     url='',
     description='',
     long_description='',

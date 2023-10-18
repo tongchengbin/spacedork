@@ -8,7 +8,12 @@ from spacedork.reps.base import SearchBase
 
 
 def format_zoomeye(item):
-    new_item = {}
+    from pprint import pprint
+    service = item['portinfo']['service']
+    port = str(item['portinfo']['port'])
+    new_item = {
+        "port": port,
+    }
     if isinstance(item["ip"], list):
         if item["ip"]:
             new_item["ip"] = item["ip"][0]
@@ -16,14 +21,14 @@ def format_zoomeye(item):
             new_item["ip"] = ""
     else:
         new_item["ip"] = item['ip']
-    port = str(item['portinfo']['port'])
+
     if "site" in item and item["site"]:
-        new_item["url"] = "http://{}".format(item["site"])
+        new_item["url"] = f"{service}://{item['site']}"
     else:
         if "443" in port:
-            new_item["url"] = f"https://{item['ip']}:{port}"
+            new_item["url"] = f"{service}://{item['ip']}:{port}"
         else:
-            new_item["url"] = f"http://{item['ip']}:{port}"
+            new_item["url"] = f"{service}://{item['ip']}:{port}"
     if "country_name_CN" in item:
         new_item["country"] = item.pop("country_name_CN")
     if "subdivisions_name_CN" in item:
@@ -60,7 +65,7 @@ class ZoomEye(SearchBase):
                 self.total = total
                 for match in content['matches']:
                     item = format_zoomeye(match)
-                    print(item['url'])
+                    self.echo(item)
             else:
                 print(f"req Error:{resp}")
 
@@ -75,6 +80,6 @@ class ZoomEye(SearchBase):
 
 
 if __name__ == "__main__":
-    zoomeye = ZoomEye("")
+    zoomeye = ZoomEye("",fields="url")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(zoomeye.search("weblogic"))
